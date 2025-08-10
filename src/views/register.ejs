@@ -1,0 +1,14 @@
+<%- include('layouts/main', { body: undefined }) %>
+<h2>Ro'yxatdan o'tish</h2>
+<% if (error) { %>
+  <p style="color: red;"><%= error %></p>
+<% } %>
+<% if (success) { %>
+  <p style="color: green;"><%= success %></p>
+<% } %>
+<form action="/register" method="POST">
+  <input type="text" name="username" placeholder="Foydalanuvchi nomi" required>
+  <input type="email" name="email" placeholder="Email" required>
+  <input type="password" name="password" placeholder="Parol" required>
+  <button type="submit">Ro'yxatdan o'tish</button>
+</form>

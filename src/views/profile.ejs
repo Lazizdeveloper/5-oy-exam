@@ -1,0 +1,33 @@
+<%- include('layouts/main', { body: undefined }) %>
+<h2>Profil</h2>
+<% if (error) { %>
+  <p style="color: red;"><%= error %></p>
+<% } %>
+<% if (success) { %>
+  <p style="color: green;"><%= success %></p>
+<% } %>
+<p>Foydalanuvchi: <%= user.username %></p>
+<p>Email: <%= user.email %></p>
+<p>Rol: <%= user.role %></p>
+
+<h3>Parolni o'zgartirish</h3>
+<form action="/change-password" method="POST">
+  <input type="password" name="oldPassword" placeholder="Eski parol" required>
+  <input type="password" name="newPassword" placeholder="Yangi parol" required>
+  <button type="submit">O'zgartirish</button>
+</form>
+
+<% if (user.role === 'admin') { %>
+  <h3>Kategoriyalar</h3>
+  <ul>
+    <% categories.forEach(cat => { %>
+      <li><%= cat.name %></li>
+    <% }) %>
+  </ul>
+  <h3>Mashinalar</h3>
+  <ul>
+    <% machines.forEach(mach => { %>
+      <li><%= mach.name %> (Kategoriya: <%= mach.category ? mach.category.name : 'N/A' %>)</li>
+    <% }) %>
+  </ul>
+<% } %>

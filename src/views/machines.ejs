@@ -1,0 +1,39 @@
+<%- include('layouts/main', { body: undefined }) %>
+<h2>Mashinalar</h2>
+<% if (error) { %>
+  <p style="color: red;"><%= error %></p>
+<% } %>
+<ul>
+  <% machines.forEach(mach => { %>
+    <li>
+      <%= mach.name %> (Kategoriya: <%= mach.category ? mach.category.name : 'N/A' %>)
+      <% if (isAdmin) { %>
+        <form action="/machines/<%= mach._id %>/edit" method="POST" style="display:inline;">
+          <input type="text" name="name" value="<%= mach.name %>" required>
+          <select name="category" required>
+            <% categories.forEach(cat => { %>
+              <option value="<%= cat._id %>" <%= mach.category && mach.category._id.toString() === cat._id.toString() ? 'selected' : '' %>><%= cat.name %></option>
+            <% }) %>
+          </select>
+          <button type="submit">O'zgartirish</button>
+        </form>
+        <form action="/machines/<%= mach._id %>/delete" method="POST" style="display:inline;">
+          <button type="submit">O'chirish</button>
+        </form>
+      <% } %>
+    </li>
+  <% }) %>
+</ul>
+<% if (isAdmin) { %>
+  <h3>Yangi mashina qo'shish</h3>
+  <form action="/machines" method="POST">
+    <input type="text" name="name" placeholder="Mashina nomi" required>
+    <select name="category" required>
+      <option value="">Kategoriyani tanlang</option>
+      <% categories.forEach(cat => { %>
+        <option value="<%= cat._id %>"><%= cat.name %></option>
+      <% }) %>
+    </select>
+    <button type="submit">Qo'shish</button>
+  </form>
+<% } %>

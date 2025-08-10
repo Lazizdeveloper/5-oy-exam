@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5-oy Imtihon</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <% if (typeof user !== 'undefined') { %>
+        <a href="/profile">Profil</a>
+        <a href="/categories">Kategoriyalar</a>
+        <a href="/machines">Mashinalar</a>
+        <form action="/logout" method="POST" style="display:inline;">
+          <button type="submit">Chiqish</button>
+        </form>
+      <% } else { %>
+        <a href="/login">Kirish</a>
+        <a href="/register">Ro'yxatdan o'tish</a>
+      <% } %>
+    </nav>
+  </header>
+  <main>
+    <%- body %>
+  </main>
+  <script src="/js/main.js"></script>
+</body>
+</html>

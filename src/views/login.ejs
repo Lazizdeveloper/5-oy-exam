@@ -1,0 +1,11 @@
+<%- include('layouts/main', { body: undefined }) %>
+<h2>Tizimga kirish</h2>
+<% if (error) { %>
+  <p style="color: red;"><%= error %></p>
+<% } %>
+<form action="/login" method="POST">
+  <input type="email" name="email" placeholder="Email" required>
+  <input type="password" name="password" placeholder="Parol" required>
+  <button type="submit">Kirish</button>
+</form>
+<a href="/forgot-password">Parolni unutdingizmi?</a>

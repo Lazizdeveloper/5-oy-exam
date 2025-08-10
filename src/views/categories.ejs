@@ -1,0 +1,28 @@
+<%- include('layouts/main.ejs', { body: undefined }) %>
+<h2>Kategoriyalar</h2>
+<% if (error) { %>
+  <p style="color: red;"><%= error %></p>
+<% } %>
+<ul>
+  <% categories.forEach(cat => { %>
+    <li>
+      <%= cat.name %>
+      <% if (isAdmin) { %>
+        <form action="/categories/<%= cat._id %>/edit" method="POST" style="display:inline;">
+          <input type="text" name="name" value="<%= cat.name %>" required>
+          <button type="submit">O'zgartirish</button>
+        </form>
+        <form action="/categories/<%= cat._id %>/delete" method="POST" style="display:inline;">
+          <button type="submit">O'chirish</button>
+        </form>
+      <% } %>
+    </li>
+  <% }) %>
+</ul>
+<% if (isAdmin) { %>
+  <h3>Yangi kategoriya qo'shish</h3>
+  <form action="/categories" method="POST">
+    <input type="text" name="name" placeholder="Kategoriya nomi" required>
+    <button type="submit">Qo'shish</button>
+  </form>
+<% } %>
