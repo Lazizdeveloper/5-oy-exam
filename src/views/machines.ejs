@@ -11,12 +11,23 @@
         <% if (isAdmin) { %>
           <div>
             <form action="/machines/<%= machine._id %>/edit" method="POST" style="display:inline;">
-              <input type="text" name="name" value="<%= machine.name %>" class="form-control d-inline-block w-50">
+              <input type="text" name="name" value="<%= machine.name %>" class="form-control d-inline-block w-50" placeholder="Nomi">
               <select name="category" class="form-select d-inline-block w-25">
                 <% categories.forEach(cat => { %>
                   <option value="<%= cat._id %>" <%= machine.category._id.toString() === cat._id.toString() ? 'selected' : '' %>><%= cat.name %></option>
                 <% }) %>
               </select>
+              <input type="text" name="tonirovka" value="<%= machine.tonirovka %>" class="form-control d-inline-block w-25" placeholder="Tonirovka">
+              <input type="text" name="motor" value="<%= machine.motor %>" class="form-control d-inline-block w-25" placeholder="Motor">
+              <input type="number" name="year" value="<%= machine.year %>" class="form-control d-inline-block w-25" placeholder="Yil">
+              <input type="text" name="color" value="<%= machine.color %>" class="form-control d-inline-block w-25" placeholder="Rang">
+              <input type="number" name="distance" value="<%= machine.distance %>" class="form-control d-inline-block w-25" placeholder="Masofa (km)">
+              <input type="text" name="gearbook" value="<%= machine.gearbook %>" class="form-control d-inline-block w-25" placeholder="Gearbook">
+              <input type="number" name="narxi" value="<%= machine.narxi %>" class="form-control d-inline-block w-25" placeholder="Narxi">
+              <input type="text" name="rasm360ichki" value="<%= machine.rasm360ichki %>" class="form-control d-inline-block w-25" placeholder="Rasm 360 Ichki">
+              <input type="text" name="rasm360tashqi" value="<%= machine.rasm360tashqi %>" class="form-control d-inline-block w-25" placeholder="Rasm 360 Tashqi">
+              <input type="text" name="description" value="<%= machine.description %>" class="form-control d-inline-block w-25" placeholder="Description">
+              <input type="text" name="modeliRasm" value="<%= machine.modeliRasm %>" class="form-control d-inline-block w-25" placeholder="Modeli Rasmi">
               <button type="submit" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
             </form>
             <form action="/machines/<%= machine._id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('O\'chirishni tasdiqlaysizmi?');">
@@ -31,7 +42,7 @@
     <form action="/machines" method="POST" class="mt-3" id="machineForm">
       <div class="mb-3">
         <label for="name" class="form-label">Yangi mashina</label>
-        <input type="text" class="form-control" name="name" placeholder="Mashina nomi" required>
+        <input type="text" class="form-control" name="name" placeholder="Nomi" required>
       </div>
       <div class="mb-3">
         <label for="category" class="form-label">Kategoriya</label>
@@ -40,6 +51,50 @@
             <option value="<%= cat._id %>"><%= cat.name %></option>
           <% }) %>
         </select>
+      </div>
+      <div class="mb-3">
+        <label for="tonirovka" class="form-label">Tonirovka</label>
+        <input type="text" class="form-control" name="tonirovka" placeholder="Tonirovka">
+      </div>
+      <div class="mb-3">
+        <label for="motor" class="form-label">Motor</label>
+        <input type="text" class="form-control" name="motor" placeholder="Motor">
+      </div>
+      <div class="mb-3">
+        <label for="year" class="form-label">Yil</label>
+        <input type="number" class="form-control" name="year" placeholder="Yil">
+      </div>
+      <div class="mb-3">
+        <label for="color" class="form-label">Rang</label>
+        <input type="text" class="form-control" name="color" placeholder="Rang">
+      </div>
+      <div class="mb-3">
+        <label for="distance" class="form-label">Masofa (km)</label>
+        <input type="number" class="form-control" name="distance" placeholder="Masofa (km)">
+      </div>
+      <div class="mb-3">
+        <label for="gearbook" class="form-label">Gearbook</label>
+        <input type="text" class="form-control" name="gearbook" placeholder="Gearbook">
+      </div>
+      <div class="mb-3">
+        <label for="narxi" class="form-label">Narxi</label>
+        <input type="number" class="form-control" name="narxi" placeholder="Narxi">
+      </div>
+      <div class="mb-3">
+        <label for="rasm360ichki" class="form-label">Rasm 360 Ichki</label>
+        <input type="text" class="form-control" name="rasm360ichki" placeholder="Rasm 360 Ichki">
+      </div>
+      <div class="mb-3">
+        <label for="rasm360tashqi" class="form-label">Rasm 360 Tashqi</label>
+        <input type="text" class="form-control" name="rasm360tashqi" placeholder="Rasm 360 Tashqi">
+      </div>
+      <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <input type="text" class="form-control" name="description" placeholder="Description">
+      </div>
+      <div class="mb-3">
+        <label for="modeliRasm" class="form-label">Modeli Rasmi</label>
+        <input type="text" class="form-control" name="modeliRasm" placeholder="Modeli Rasmi">
       </div>
       <button type="submit" class="btn btn-primary w-100"><i class="fas fa-plus"></i> Qo'shish</button>
     </form>

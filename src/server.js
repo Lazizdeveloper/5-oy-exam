@@ -70,7 +70,18 @@ const Category = mongoose.model('Category', categorySchema);
 const machineSchema = new mongoose.Schema({
   name: { type: String, required: true },
   category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  tonirovka: String,
+  motor: String,
+  year: Number,
+  color: String,
+  distance: Number,
+  gearbook: String,
+  narxi: Number,
+  rasm360ichki: String,
+  rasm360tashqi: String,
+  description: String,
+  modeliRasm: String
 });
 const Machine = mongoose.model('Machine', machineSchema);
 
@@ -144,7 +155,18 @@ const categorySchemaJoi = Joi.object({
 
 const machineSchemaJoi = Joi.object({
   name: Joi.string().min(3).max(50).required(),
-  category: Joi.string().required()
+  category: Joi.string().required(),
+  tonirovka: Joi.string().allow(''),
+  motor: Joi.string().allow(''),
+  year: Joi.number().integer().min(1900).max(new Date().getFullYear()).allow(null),
+  color: Joi.string().allow(''),
+  distance: Joi.number().integer().min(0).allow(null),
+  gearbook: Joi.string().allow(''),
+  narxi: Joi.number().integer().min(0).allow(null),
+  rasm360ichki: Joi.string().allow(''),
+  rasm360tashqi: Joi.string().allow(''),
+  description: Joi.string().allow(''),
+  modeliRasm: Joi.string().allow('')
 });
 
 // Validatsiya middleware
