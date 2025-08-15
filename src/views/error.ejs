@@ -1,4 +1,6 @@
-<%- include('layouts/main.ejs', { body: undefined }) %>
-<h2>Xato</h2>
-<p style="color: red;"><%= message %></p>
-<a href="/">Bosh sahifaga qaytish</a>
+<%- include('layouts/main', { body: undefined }) %>
+<div class="card p-4 shadow-lg animate__animated animate__zoomIn">
+  <h2 class="card-title text-center"><i class="fas fa-exclamation-triangle"></i> Xato</h2>
+  <div class="alert alert-danger animate__animated animate__shakeX"><%= message %></div>
+  <a href="/" class="btn btn-primary w-100"><i class="fas fa-home"></i> Bosh sahifaga qaytish</a>
+</div>

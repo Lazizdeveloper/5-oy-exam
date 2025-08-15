@@ -1,33 +1,45 @@
 <%- include('layouts/main', { body: undefined }) %>
-<h2>Profil</h2>
-<% if (error) { %>
-  <p style="color: red;"><%= error %></p>
-<% } %>
-<% if (success) { %>
-  <p style="color: green;"><%= success %></p>
-<% } %>
-<p>Foydalanuvchi: <%= user.username %></p>
-<p>Email: <%= user.email %></p>
-<p>Rol: <%= user.role %></p>
-
-<h3>Parolni o'zgartirish</h3>
-<form action="/change-password" method="POST">
-  <input type="password" name="oldPassword" placeholder="Eski parol" required>
-  <input type="password" name="newPassword" placeholder="Yangi parol" required>
-  <button type="submit">O'zgartirish</button>
-</form>
-
-<% if (user.role === 'admin') { %>
-  <h3>Kategoriyalar</h3>
-  <ul>
-    <% categories.forEach(cat => { %>
-      <li><%= cat.name %></li>
-    <% }) %>
-  </ul>
-  <h3>Mashinalar</h3>
-  <ul>
-    <% machines.forEach(mach => { %>
-      <li><%= mach.name %> (Kategoriya: <%= mach.category ? mach.category.name : 'N/A' %>)</li>
-    <% }) %>
-  </ul>
-<% } %>
+<div class="card p-4 shadow-lg animate__animated animate__zoomIn">
+  <h2 class="card-title text-center"><i class="fas fa-user"></i> Profil</h2>
+  <% if (error) { %>
+    <div class="alert alert-danger animate__animated animate__shakeX"><%= error %></div>
+  <% } %>
+  <% if (success) { %>
+    <div class="alert alert-success animate__animated animate__bounceIn"><%= success %></div>
+  <% } %>
+  <div class="mb-3">
+    <p><strong>Foydalanuvchi nomi:</strong> <%= user.username %></p>
+    <p><strong>Email:</strong> <%= user.email %></p>
+    <p><strong>Rol:</strong> <%= user.role %></p>
+  </div>
+  <% if (adminData && (adminData.categories || adminData.machines)) { %> <!-- Xavfsiz tekshiruv qo'shildi -->
+    <h3 class="mt-4">Admin ma'lumotlari</h3>
+    <% if (adminData.categories && adminData.categories.length > 0) { %>
+      <h4>Kategoriyalar</h4>
+      <ul class="list-group">
+        <% adminData.categories.forEach(category => { %>
+          <li class="list-group-item"><%= category.name %></li>
+        <% }) %>
+      </ul>
+    <% } %>
+    <% if (adminData.machines && adminData.machines.length > 0) { %>
+      <h4>Mashinalar</h4>
+      <ul class="list-group">
+        <% adminData.machines.forEach(machine => { %>
+          <li class="list-group-item"><%= machine.name %> (Kategoriya: <%= machine.category.name %>)</li>
+        <% }) %>
+      </ul>
+    <% } %>
+  <% } %>
+  <form action="/change-password" method="POST" id="changePasswordForm" class="mt-4">
+    <div class="mb-3">
+      <label for="oldPassword" class="form-label">Eski parol</label>
+      <input type="password" class="form-control" name="oldPassword" placeholder="Eski parol" required>
+    </div>
+    <div class="mb-3">
+      <label for="newPassword" class="form-label">Yangi parol</label>
+      <input type="password" class="form-control" name="newPassword" placeholder="Yangi parol" required>
+    </div>
+    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-lock"></i> Parolni o'zgartirish</button>
+  </form>
+</div>
