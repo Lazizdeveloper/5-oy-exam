@@ -1,3 +1,4 @@
+import fs from 'fs';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
@@ -11,6 +12,7 @@ import { randomBytes } from 'crypto';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import multer from 'multer';
 
 dotenv.config();
 
@@ -24,6 +26,21 @@ app.use(cookieParser());
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Multer sozlamalari
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, 'public', 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+const upload = multer({ storage: storage });
 
 // MongoDB ulanishi
 mongoose.connect(process.env.MONGO_URI)
@@ -81,7 +98,9 @@ const machineSchema = new mongoose.Schema({
   rasm360ichki: String,
   rasm360tashqi: String,
   description: String,
-  modeliRasm: String
+  modeliRasm: String,
+  status: { type: String, enum: ['available', 'sold'], default: 'available' },
+  buyer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }
 });
 const Machine = mongoose.model('Machine', machineSchema);
 
@@ -167,6 +186,13 @@ const machineSchemaJoi = Joi.object({
   rasm360tashqi: Joi.string().allow(''),
   description: Joi.string().allow(''),
   modeliRasm: Joi.string().allow('')
+});
+
+// Yangi admin qo'shish schema
+const adminSchema = Joi.object({
+  username: Joi.string().min(3).max(30).required(),
+  email: Joi.string().email().required(),
+  password: Joi.string().min(6).required()
 });
 
 // Validatsiya middleware
@@ -376,12 +402,13 @@ app.get('/profile', authMiddleware, async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id).select('-password -verificationToken -resetToken -resetTokenExpiry -refreshToken').lean();
     let adminData = {};
-    if (req.user.role === 'admin') {
+    const isAdmin = req.user.role === 'admin'; // isAdmin ni aniqlash
+    if (isAdmin) {
       adminData.categories = await Category.find({ createdBy: req.user.id }).lean();
       adminData.machines = await Machine.find({ createdBy: req.user.id }).populate('category').lean();
     }
     logger.info(`Profil ko'rildi: ${user.email}`);
-    res.render('profile', { user, adminData, error: null, success: null });
+    res.render('profile', { user, adminData, isAdmin, error: null, success: null }); // isAdmin ni uzatish
   } catch (err) {
     next(err);
   }
@@ -436,31 +463,144 @@ app.get('/machines', authMiddleware, async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
     const categories = await Category.find().lean();
-    const machines = await Machine.find().populate('category').lean();
-    res.render('machines', { machines, categories, isAdmin: user.role === 'admin', error: null });
+    const machines = await Machine.find({ status: 'available' }).populate('category').lean();
+    res.render('machines', { machines, categories, isAdmin: user.role === 'admin', error: null, selectedCategory: null });
   } catch (err) {
     next(err);
   }
 });
 
-app.post('/machines', authMiddleware, adminMiddleware, validate(machineSchemaJoi), async (req, res, next) => {
+// Kategoriyaga asoslangan mashinalar
+app.get('/machines/category/:categoryId', authMiddleware, async (req, res, next) => {
   try {
-    const machine = new Machine({ ...req.body, createdBy: req.user.id });
+    const user = await User.findById(req.user.id);
+    const categories = await Category.find().lean();
+    const selectedCategory = await Category.findById(req.params.categoryId).lean();
+    const machines = await Machine.find({ category: req.params.categoryId, status: 'available' }).populate('category').lean();
+    res.render('machines', { machines, categories, isAdmin: user.role === 'admin', error: null, selectedCategory: selectedCategory ? selectedCategory.name : null });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Bitta mashina ma'lumotlari
+app.get('/machines/:machineId', authMiddleware, async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+    const machine = await Machine.findById(req.params.machineId).populate('category').lean();
+    if (!machine) return res.render('error', { message: 'Mashina topilmadi' });
+    res.render('machine-details', { machine, isAdmin: user.role === 'admin', error: null });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Mashina sotib olish
+app.post('/machines/:machineId/buy', authMiddleware, async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const machine = await Machine.findById(req.params.machineId);
+    if (!machine) return res.render('error', { message: 'Mashina topilmadi' });
+    if (machine.status === 'sold') return res.render('error', { message: 'Bu mashina allaqachon sotib olingan' });
+    if (machine.createdBy.toString() === userId) return res.render('error', { message: 'O\'zingizning mashinangizni sotib ololmaysiz' });
+
+    machine.status = 'sold';
+    machine.buyer = userId;
+    await machine.save();
+
+    logger.info(`Mashina sotib olindi: ${machine._id} by ${userId}`);
+    res.redirect('/profile');
+  } catch (err) {
+    logger.error(`Mashina sotib olishda xato: ${err.message}`);
+    next(err);
+  }
+});
+
+// Sotib olishni bekor qilish
+app.post('/machines/:machineId/cancel', authMiddleware, async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const machine = await Machine.findById(req.params.machineId);
+    if (!machine) return res.render('error', { message: 'Mashina topilmadi' });
+    if (machine.buyer?.toString() !== userId) return res.render('error', { message: 'Siz bu mashinani sotib olmadingiz' });
+
+    machine.status = 'available';
+    machine.buyer = null;
+    await machine.save();
+
+    logger.info(`Mashina sotib olish bekor qilindi: ${machine._id} by ${userId}`);
+    res.redirect('/profile');
+  } catch (err) {
+    logger.error(`Mashina bekor qilishda xato: ${err.message}`);
+    next(err);
+  }
+});
+
+app.post('/machines', authMiddleware, adminMiddleware, upload.fields([{ name: 'rasm360ichki' }, { name: 'rasm360tashqi' }]), validate(machineSchemaJoi), async (req, res, next) => {
+  try {
+    const { name, category, tonirovka, motor, year, color, distance, gearbook, narxi, description, modeliRasm } = req.body;
+    const machineData = {
+      name,
+      category,
+      createdBy: req.user.id,
+      tonirovka,
+      motor,
+      year: year ? parseInt(year) : null,
+      color,
+      distance: distance ? parseInt(distance) : null,
+      gearbook,
+      narxi: narxi ? parseInt(narxi) : null,
+      description,
+      modeliRasm
+    };
+    if (req.files['rasm360ichki']) {
+      machineData.rasm360ichki = `/uploads/${req.files['rasm360ichki'][0].filename}`;
+      logger.info(`Yuklangan rasm (ichki): ${machineData.rasm360ichki}`);
+    }
+    if (req.files['rasm360tashqi']) {
+      machineData.rasm360tashqi = `/uploads/${req.files['rasm360tashqi'][0].filename}`;
+      logger.info(`Yuklangan rasm (tashqi): ${machineData.rasm360tashqi}`);
+    }
+    const machine = new Machine(machineData);
     await machine.save();
     logger.info(`Mashina qo'shildi: ${req.user.id}`);
     res.redirect('/machines');
   } catch (err) {
+    logger.error(`Mashina qo'shishda xato: ${err.message}`);
     next(err);
   }
 });
 
-app.post('/machines/:id/edit', authMiddleware, adminMiddleware, validate(machineSchemaJoi), async (req, res, next) => {
+app.post('/machines/:id/edit', authMiddleware, adminMiddleware, upload.fields([{ name: 'rasm360ichki' }, { name: 'rasm360tashqi' }]), validate(machineSchemaJoi), async (req, res, next) => {
   try {
-    const machine = await Machine.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { name, category, tonirovka, motor, year, color, distance, gearbook, narxi, description, modeliRasm } = req.body;
+    const machineData = {
+      name,
+      category,
+      tonirovka,
+      motor,
+      year: year ? parseInt(year) : undefined,
+      color,
+      distance: distance ? parseInt(distance) : undefined,
+      gearbook,
+      narxi: narxi ? parseInt(narxi) : undefined,
+      description,
+      modeliRasm
+    };
+    if (req.files['rasm360ichki']) {
+      machineData.rasm360ichki = `/uploads/${req.files['rasm360ichki'][0].filename}`;
+      logger.info(`Yuklangan rasm (ichki): ${machineData.rasm360ichki}`);
+    }
+    if (req.files['rasm360tashqi']) {
+      machineData.rasm360tashqi = `/uploads/${req.files['rasm360tashqi'][0].filename}`;
+      logger.info(`Yuklangan rasm (tashqi): ${machineData.rasm360tashqi}`);
+    }
+    const machine = await Machine.findByIdAndUpdate(req.params.id, machineData, { new: true });
     if (!machine) return res.render('machines', { machines: await Machine.find().populate('category').lean(), categories: await Category.find().lean(), isAdmin: true, error: 'Mashina topilmadi' });
     logger.info(`Mashina o'zgartirildi: ${req.user.id}`);
     res.redirect('/machines');
   } catch (err) {
+    logger.error(`Mashina o'zgartirishda xato: ${err.message}`);
     next(err);
   }
 });
@@ -471,6 +611,46 @@ app.post('/machines/:id/delete', authMiddleware, adminMiddleware, async (req, re
     if (!machine) return res.render('machines', { machines: await Machine.find().populate('category').lean(), categories: await Category.find().lean(), isAdmin: true, error: 'Mashina topilmadi' });
     logger.info(`Mashina o'chirildi: ${req.user.id}`);
     res.redirect('/machines');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Yangi admin qo'shish
+app.get('/add-admin', authMiddleware, adminMiddleware, (req, res) => {
+  res.render('add-admin', { error: null, success: null });
+});
+
+app.post('/add-admin', authMiddleware, adminMiddleware, validate(adminSchema), async (req, res, next) => {
+  try {
+    const { username, email, password } = req.body;
+    const existingUser = await User.findOne({ email });
+    if (existingUser) return res.render('add-admin', { error: 'Foydalanuvchi mavjud', success: null });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const verificationToken = randomBytes(32).toString('hex');
+    const user = new User({ username, email, password: hashedPassword, role: 'admin', verificationToken });
+    await user.save();
+
+    const verifyUrl = `${process.env.BASE_URL}/verify/${verificationToken}`;
+    await transporter.sendMail({
+      to: email,
+      subject: 'Admin hisobingizni tasdiqlang',
+      html: `Tasdiqlash uchun <a href="${verifyUrl}">bu yerga</a> bosing.`
+    });
+
+    logger.info(`Yangi admin qo'shildi: ${email}`);
+    res.render('add-admin', { error: null, success: 'Yangi admin qo\'shildi va tasdiqlash emaili yuborildi.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Foydalanuvchilarni ko'rish
+app.get('/users', authMiddleware, adminMiddleware, async (req, res, next) => {
+  try {
+    const users = await User.find().select('-password -verificationToken -resetToken -resetTokenExpiry -refreshToken').lean();
+    res.render('users', { users, error: null });
   } catch (err) {
     next(err);
   }

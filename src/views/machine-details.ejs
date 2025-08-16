@@ -1,0 +1,38 @@
+<%- include('layouts/main', { body: undefined }) %>
+<div class="card p-4 shadow-lg animate__animated animate__zoomIn">
+  <h2 class="card-title text-center"><i class="fas fa-car"></i> Mashina Ma'lumotlari</h2>
+  <% if (error) { %>
+    <div class="alert alert-danger animate__animated animate__shakeX"><%= error %></div>
+  <% } %>
+  <div class="card-body">
+    <h4><%= machine.name %></h4>
+    <p><strong>Kategoriya:</strong> <%= machine.category.name %></p>
+    <p><strong>Tonirovka:</strong> <%= machine.tonirovka || 'Noma\'lum' %></p>
+    <p><strong>Motor:</strong> <%= machine.motor || 'Noma\'lum' %></p>
+    <p><strong>Yil:</strong> <%= machine.year || 'Noma\'lum' %></p>
+    <p><strong>Rang:</strong> <%= machine.color || 'Noma\'lum' %></p>
+    <p><strong>Masofa:</strong> <%= machine.distance || 'Noma\'lum' %> km</p>
+    <p><strong>Gearbook:</strong> <%= machine.gearbook || 'Noma\'lum' %></p>
+    <p><strong>Narxi:</strong> <%= machine.narxi || 'Noma\'lum' %> so\'m</p>
+    <p><strong>Holati:</strong> <%= machine.status %></p>
+    <% if (machine.rasm360ichki) { %>
+      <p><strong>Rasm 360 Ichki:</strong> <img src="<%= machine.rasm360ichki %>" alt="Ichki rasm" style="max-width: 200px;"></p>
+    <% } %>
+    <% if (machine.rasm360tashqi) { %>
+      <p><strong>Rasm 360 Tashqi:</strong> <img src="<%= machine.rasm360tashqi %>" alt="Tashqi rasm" style="max-width: 200px;"></p>
+    <% } %>
+    <p><strong>Vaizha:</strong> <%= machine.description || 'Noma\'lum' %></p>
+    <p><strong>Modeli Rasmi:</strong> <%= machine.modeliRasm || 'Noma\'lum' %></p>
+
+    <% if (!isAdmin && machine.status === 'available') { %>
+      <form action="/machines/<%= machine._id %>/buy" method="POST" style="display:inline;" onsubmit="return confirm('Sotib olmoqchimisiz?');">
+        <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-shopping-cart"></i> Sotib Olish</button>
+      </form>
+    <% } else if (!isAdmin && machine.status === 'sold' && machine.buyer?.toString() === req.user.id) { %>
+      <form action="/machines/<%= machine._id %>/cancel" method="POST" style="display:inline;" onsubmit="return confirm('Sotib olishni bekor qilmoqchimisiz?');">
+        <button type="submit" class="btn btn-sm btn-warning"><i class="fas fa-undo"></i> Bekor Qilish</button>
+      </form>
+    <% } %>
+    <a href="/machines<%= typeof selectedCategory !== 'undefined' && selectedCategory ? '/category/' + machine.category._id : '' %>" class="btn btn-sm btn-secondary mt-2"><i class="fas fa-arrow-left"></i> Orqaga</a>
+  </div>
+</div>

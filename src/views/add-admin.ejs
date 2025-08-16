@@ -1,0 +1,25 @@
+<%- include('layouts/main', { body: undefined }) %>
+<div class="card p-4 shadow-lg animate__animated animate__zoomIn">
+  <h2 class="card-title text-center"><i class="fas fa-user-shield"></i> Yangi Admin Qo'shish</h2>
+  <% if (error) { %>
+    <div class="alert alert-danger animate__animated animate__shakeX"><%= error %></div>
+  <% } %>
+  <% if (success) { %>
+    <div class="alert alert-success animate__animated animate__fadeIn"><%= success %></div>
+  <% } %>
+  <form action="/add-admin" method="POST" class="mt-3">
+    <div class="mb-3">
+      <label for="username" class="form-label">Foydalanuvchi nomi</label>
+      <input type="text" class="form-control" id="username" name="username" placeholder="Foydalanuvchi nomi" required>
+    </div>
+    <div class="mb-3">
+      <label for="email" class="form-label">Email</label>
+      <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+    </div>
+    <div class="mb-3">
+      <label for="password" class="form-label">Parol</label>
+      <input type="password" class="form-control" id="password" name="password" placeholder="Parol" required>
+    </div>
+    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-plus"></i> Admin Qo'shish</button>
+  </form>
+</div>

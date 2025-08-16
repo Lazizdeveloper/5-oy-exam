@@ -10,7 +10,7 @@
         <%= machine.name %> (Kategoriya: <%= machine.category.name %>)
         <% if (isAdmin) { %>
           <div>
-            <form action="/machines/<%= machine._id %>/edit" method="POST" style="display:inline;">
+            <form action="/machines/<%= machine._id %>/edit" method="POST" enctype="multipart/form-data" style="display:inline;">
               <input type="text" name="name" value="<%= machine.name %>" class="form-control d-inline-block w-50" placeholder="Nomi">
               <select name="category" class="form-select d-inline-block w-25">
                 <% categories.forEach(cat => { %>
@@ -24,8 +24,8 @@
               <input type="number" name="distance" value="<%= machine.distance %>" class="form-control d-inline-block w-25" placeholder="Masofa (km)">
               <input type="text" name="gearbook" value="<%= machine.gearbook %>" class="form-control d-inline-block w-25" placeholder="Gearbook">
               <input type="number" name="narxi" value="<%= machine.narxi %>" class="form-control d-inline-block w-25" placeholder="Narxi">
-              <input type="text" name="rasm360ichki" value="<%= machine.rasm360ichki %>" class="form-control d-inline-block w-25" placeholder="Rasm 360 Ichki">
-              <input type="text" name="rasm360tashqi" value="<%= machine.rasm360tashqi %>" class="form-control d-inline-block w-25" placeholder="Rasm 360 Tashqi">
+              <input type="file" name="rasm360ichki" class="form-control d-inline-block w-25" accept="image/*">
+              <input type="file" name="rasm360tashqi" class="form-control d-inline-block w-25" accept="image/*">
               <input type="text" name="description" value="<%= machine.description %>" class="form-control d-inline-block w-25" placeholder="Description">
               <input type="text" name="modeliRasm" value="<%= machine.modeliRasm %>" class="form-control d-inline-block w-25" placeholder="Modeli Rasmi">
               <button type="submit" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></button>
@@ -34,12 +34,17 @@
               <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
             </form>
           </div>
+        <% } else if (machine.status === 'available') { %>
+          <form action="/machines/<%= machine._id %>/buy" method="POST" style="display:inline;" onsubmit="return confirm('Sotib olmoqchimisiz?');">
+            <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-shopping-cart"></i> Sotib Olish</button>
+          </form>
         <% } %>
+        <a href="/machines/<%= machine._id %>" class="btn btn-sm btn-info"><i class="fas fa-info-circle"></i> Ko'proq</a>
       </li>
     <% }) %>
   </ul>
   <% if (isAdmin) { %>
-    <form action="/machines" method="POST" class="mt-3" id="machineForm">
+    <form action="/machines" method="POST" enctype="multipart/form-data" class="mt-3" id="machineForm">
       <div class="mb-3">
         <label for="name" class="form-label">Yangi mashina</label>
         <input type="text" class="form-control" name="name" placeholder="Nomi" required>
@@ -82,11 +87,11 @@
       </div>
       <div class="mb-3">
         <label for="rasm360ichki" class="form-label">Rasm 360 Ichki</label>
-        <input type="text" class="form-control" name="rasm360ichki" placeholder="Rasm 360 Ichki">
+        <input type="file" class="form-control" name="rasm360ichki" accept="image/*">
       </div>
       <div class="mb-3">
         <label for="rasm360tashqi" class="form-label">Rasm 360 Tashqi</label>
-        <input type="text" class="form-control" name="rasm360tashqi" placeholder="Rasm 360 Tashqi">
+        <input type="file" class="form-control" name="rasm360tashqi" accept="image/*">
       </div>
       <div class="mb-3">
         <label for="description" class="form-label">Description</label>

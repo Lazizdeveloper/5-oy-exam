@@ -5,41 +5,36 @@
     <div class="alert alert-danger animate__animated animate__shakeX"><%= error %></div>
   <% } %>
   <% if (success) { %>
-    <div class="alert alert-success animate__animated animate__bounceIn"><%= success %></div>
+    <div class="alert alert-success animate__animated animate__fadeIn"><%= success %></div>
   <% } %>
-  <div class="mb-3">
+  <div class="card-body">
     <p><strong>Foydalanuvchi nomi:</strong> <%= user.username %></p>
     <p><strong>Email:</strong> <%= user.email %></p>
-    <p><strong>Rol:</strong> <%= user.role %></p>
+    <p><strong>Role:</strong> <%= user.role %></p>
+
+    <form action="/change-password" method="POST" class="mt-3">
+      <div class="mb-3">
+        <label for="oldPassword" class="form-label">Eski parol</label>
+        <input type="password" class="form-control" id="oldPassword" name="oldPassword" placeholder="Eski parol" required>
+      </div>
+      <div class="mb-3">
+        <label for="newPassword" class="form-label">Yangi parol</label>
+        <input type="password" class="form-control" id="newPassword" name="newPassword" placeholder="Yangi parol" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100"><i class="fas fa-lock"></i> Parolni O'zgartirish</button>
+    </form>
+
+    <% if (isAdmin) { %>
+      <div class="mt-3">
+        <a href="/add-admin" class="btn btn-success btn-sm mb-2"><i class="fas fa-user-plus"></i> Yangi Admin Qo'shish</a>
+        <a href="/users" class="btn btn-info btn-sm mb-2"><i class="fas fa-users"></i> Foydalanuvchilarni Ko'rish</a>
+        <a href="/categories" class="btn btn-warning btn-sm mb-2"><i class="fas fa-list"></i> Kategoriyalarni Boshqarish</a>
+        <a href="/machines" class="btn btn-primary btn-sm"><i class="fas fa-car"></i> Mashinalarni Boshqarish</a>
+      </div>
+    <% } %>
+
+    <form action="/logout" method="POST" class="mt-3">
+      <button type="submit" class="btn btn-danger w-100"><i class="fas fa-sign-out-alt"></i> Chiqish</button>
+    </form>
   </div>
-  <% if (adminData && (adminData.categories || adminData.machines)) { %> <!-- Xavfsiz tekshiruv qo'shildi -->
-    <h3 class="mt-4">Admin ma'lumotlari</h3>
-    <% if (adminData.categories && adminData.categories.length > 0) { %>
-      <h4>Kategoriyalar</h4>
-      <ul class="list-group">
-        <% adminData.categories.forEach(category => { %>
-          <li class="list-group-item"><%= category.name %></li>
-        <% }) %>
-      </ul>
-    <% } %>
-    <% if (adminData.machines && adminData.machines.length > 0) { %>
-      <h4>Mashinalar</h4>
-      <ul class="list-group">
-        <% adminData.machines.forEach(machine => { %>
-          <li class="list-group-item"><%= machine.name %> (Kategoriya: <%= machine.category.name %>)</li>
-        <% }) %>
-      </ul>
-    <% } %>
-  <% } %>
-  <form action="/change-password" method="POST" id="changePasswordForm" class="mt-4">
-    <div class="mb-3">
-      <label for="oldPassword" class="form-label">Eski parol</label>
-      <input type="password" class="form-control" name="oldPassword" placeholder="Eski parol" required>
-    </div>
-    <div class="mb-3">
-      <label for="newPassword" class="form-label">Yangi parol</label>
-      <input type="password" class="form-control" name="newPassword" placeholder="Yangi parol" required>
-    </div>
-    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-lock"></i> Parolni o'zgartirish</button>
-  </form>
 </div>
